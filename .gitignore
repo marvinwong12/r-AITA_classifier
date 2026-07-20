@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Ignore model files and artifacts
+models/
+*.joblib
+*.pkl
+*.pt
+*.safetensors
+*.bin
+
+# Ignore Hugging Face cache and training outputs
+models/
+checkpoint-*/
+
+data/
+*.csv

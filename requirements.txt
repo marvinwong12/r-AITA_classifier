@@ -1,0 +1,25 @@
+# --- Data Processing & Analysis ---
+pandas
+numpy
+
+# --- Classical Machine Learning & Metrics ---
+scikit-learn
+xgboost
+joblib
+
+# --- Text Feature Engineering & NLP ---
+nltk
+sentence-transformers
+
+# --- Deep Learning & DeBERTa Fine-Tuning ---
+torch
+transformers
+datasets
+accelerate
+sentencepiece
+protobuf
+
+# --- UI & Data Visualization ---
+matplotlib
+seaborn
+streamlit
