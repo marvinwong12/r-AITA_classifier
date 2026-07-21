@@ -4,10 +4,9 @@ import argparse
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import classification_report, accuracy_score, precision_recall_fscore_support
 
 from datasets import Dataset
 from transformers import (
@@ -18,29 +17,26 @@ from transformers import (
     DataCollatorWithPadding
 )
 
-class WeightedLossTrainer(Trainer):
-    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
-        labels = inputs.get("labels")
-        outputs = model(**inputs)
-        logits = outputs.get("logits")
-        
-        # Give ~2.85x higher weight to Class 1 ("Asshole") errors
-        class_weights = torch.tensor([1.0, 2.85]).to(logits.device)
-        loss_fct = nn.CrossEntropyLoss(weight=class_weights)
-        loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
-        
-        return (loss, outputs) if return_outputs else loss
 
 def balance_via_undersampling(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Downsamples Class 0 ("Not Asshole") to match Class 1 ("Asshole") count
+    and shuffles the resulting dataset.
+    """
     df_0 = df[df['label'] == 0]
     df_1 = df[df['label'] == 1]
     
     # Downsample class 0 to match class 1 count
     df_0_downsampled = df_0.sample(n=len(df_1), random_state=42)
     
-    # Combine and shuffle
-    balanced_df = pd.concat([df_0_downsampled, df_1]).sample(frac=1, random_state=42).reset_index(drop=True)
+    # Combine and shuffle rows
+    balanced_df = (
+        pd.concat([df_0_downsampled, df_1])
+        .sample(frac=1, random_state=42)
+        .reset_index(drop=True)
+    )
     return balanced_df
+
 
 def clean_text_data(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -62,6 +58,7 @@ def clean_text_data(df: pd.DataFrame) -> pd.DataFrame:
 
     # Standardize whitespace
     df['clean_text'] = df['body'].apply(lambda x: re.sub(r'\s+', ' ', str(x)).strip())
+    
     # Rename target label column to 'label' for Hugging Face Trainer compatibility
     if 'is_asshole' in df.columns:
         df['label'] = df['is_asshole'].astype(int)
@@ -88,14 +85,17 @@ def compute_metrics(eval_pred):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Fine-tune DeBERTa on AITA Dataset")
-    parser.add_argument("--model_name", type=str, default="microsoft/deberta-v3-small", help="Hugging Face model checkpoint")
+    parser = argparse.ArgumentParser(description="Fine-tune RoBERTa on AITA Dataset")
+    # CHANGED: Default model set to roberta-base
+    parser.add_argument("--model_name", type=str, default="roberta-base", help="Hugging Face model checkpoint")
     parser.add_argument("--data_path", type=str, default="data/raw/aita_10k_sample.csv")
-    parser.add_argument("--output_dir", type=str, default="models/deberta_aita")
+    # CHANGED: Output folder updated for roberta
+    parser.add_argument("--output_dir", type=str, default="models/roberta_aita")
     parser.add_argument("--max_length", type=int, default=512, help="Max token sequence length")
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--batch_size", type=int, default=16)
-    parser.add_argument("--lr", type=float, default=1e-5, help="Learning rate for fine-tuning")
+    # CHANGED: Learning rate increased to 3e-5 for stable feature learning
+    parser.add_argument("--lr", type=float, default=3e-5, help="Learning rate for fine-tuning")
     return parser.parse_args()
 
 
@@ -116,22 +116,9 @@ def main():
     )
     
     # --- 2b. UNDERSAMPLING (Train set only) ---
-    df_0 = train_df[train_df['label'] == 0]
-    df_1 = train_df[train_df['label'] == 1]
-    
-    # Sample Class 0 (Not Asshole) down to match the exact count of Class 1 (Asshole)
-    df_0_undersampled = df_0.sample(n=len(df_1), random_state=42)
-    
-    # Combine downsampled Class 0 with Class 1, then shuffle rows
-    train_df = (
-        pd.concat([df_0_undersampled, df_1])
-        .sample(frac=1, random_state=42)
-        .reset_index(drop=True)
-    )
-    # ------------------------------------------
-
-    print(f"Balanced Train set size: {len(train_df)} (50% Class 0 / 50% Class 1)")
-    print(f"Test set size (original ratio): {len(test_df)}")
+    print("Applying undersampling to balance training set (50/50 split)...")
+    train_df = balance_via_undersampling(train_df)
+    print(f"Balanced Train set size: {len(train_df)} | Test set size (natural ratio): {len(test_df)}")
     
     # 3. Load Tokenizer & Model
     print(f"Loading tokenizer & model weights for '{args.model_name}'...")
@@ -169,12 +156,13 @@ def main():
         metric_for_best_model="f1_macro",
         greater_is_better=True,
         logging_steps=50,
-        fp16=False,
-        bf16=True, # Auto-enable mixed precision if GPU is present
-        report_to="wandb", # Changed from "none"
-        run_name="deberta-aita-10k" # Disable wandb/mlflow logging by default
+        # CHANGED: Enabled fp16 for RoBERTa (fast & stable)
+        fp16=True,
+        bf16=False,
+        report_to="none"
     )
 
+    # CHANGED: Using standard Hugging Face Trainer (no custom class needed since data is balanced)
     trainer = Trainer(
         model=model,
         args=training_args,
