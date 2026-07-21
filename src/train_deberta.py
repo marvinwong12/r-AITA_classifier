@@ -157,8 +157,8 @@ def main():
         greater_is_better=True,
         logging_steps=50,
         # CHANGED: Enabled fp16 for RoBERTa (fast & stable)
-        fp16=True,
-        bf16=False,
+        fp16=False,
+        bf16=True,
         report_to="none"
     )
 
