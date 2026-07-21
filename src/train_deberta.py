@@ -128,7 +128,8 @@ def main():
         metric_for_best_model="f1_macro",
         greater_is_better=True,
         logging_steps=50,
-        fp16=torch.cuda.is_available(), # Auto-enable mixed precision if GPU is present
+        fp16=False,
+        bf16=True, # Auto-enable mixed precision if GPU is present
         report_to="none" # Disable wandb/mlflow logging by default
     )
 
