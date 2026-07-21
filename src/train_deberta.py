@@ -31,6 +31,17 @@ class WeightedLossTrainer(Trainer):
         
         return (loss, outputs) if return_outputs else loss
 
+def balance_via_undersampling(df: pd.DataFrame) -> pd.DataFrame:
+    df_0 = df[df['label'] == 0]
+    df_1 = df[df['label'] == 1]
+    
+    # Downsample class 0 to match class 1 count
+    df_0_downsampled = df_0.sample(n=len(df_1), random_state=42)
+    
+    # Combine and shuffle
+    balanced_df = pd.concat([df_0_downsampled, df_1]).sample(frac=1, random_state=42).reset_index(drop=True)
+    return balanced_df
+
 def clean_text_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Cleans raw dataframe: filters out deleted/removed/empty body text.
@@ -84,7 +95,7 @@ def parse_args():
     parser.add_argument("--max_length", type=int, default=512, help="Max token sequence length")
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--batch_size", type=int, default=16)
-    parser.add_argument("--lr", type=float, default=2e-5, help="Learning rate for fine-tuning")
+    parser.add_argument("--lr", type=float, default=1e-5, help="Learning rate for fine-tuning")
     return parser.parse_args()
 
 
@@ -104,7 +115,23 @@ def main():
         clean_df, test_size=0.2, random_state=42, stratify=clean_df['label']
     )
     
-    print(f"Train set size: {len(train_df)} | Test set size: {len(test_df)}")
+    # --- 2b. UNDERSAMPLING (Train set only) ---
+    df_0 = train_df[train_df['label'] == 0]
+    df_1 = train_df[train_df['label'] == 1]
+    
+    # Sample Class 0 (Not Asshole) down to match the exact count of Class 1 (Asshole)
+    df_0_undersampled = df_0.sample(n=len(df_1), random_state=42)
+    
+    # Combine downsampled Class 0 with Class 1, then shuffle rows
+    train_df = (
+        pd.concat([df_0_undersampled, df_1])
+        .sample(frac=1, random_state=42)
+        .reset_index(drop=True)
+    )
+    # ------------------------------------------
+
+    print(f"Balanced Train set size: {len(train_df)} (50% Class 0 / 50% Class 1)")
+    print(f"Test set size (original ratio): {len(test_df)}")
     
     # 3. Load Tokenizer & Model
     print(f"Loading tokenizer & model weights for '{args.model_name}'...")
@@ -148,7 +175,7 @@ def main():
         run_name="deberta-aita-10k" # Disable wandb/mlflow logging by default
     )
 
-    trainer = WeightedLossTrainer(
+    trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
