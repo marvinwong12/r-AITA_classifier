@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import torch
+import torch.nn as nn
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_recall_fscore_support
@@ -17,6 +18,18 @@ from transformers import (
     DataCollatorWithPadding
 )
 
+class WeightedLossTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+        labels = inputs.get("labels")
+        outputs = model(**inputs)
+        logits = outputs.get("logits")
+        
+        # Give ~2.85x higher weight to Class 1 ("Asshole") errors
+        class_weights = torch.tensor([1.0, 2.85]).to(logits.device)
+        loss_fct = nn.CrossEntropyLoss(weight=class_weights)
+        loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
+        
+        return (loss, outputs) if return_outputs else loss
 
 def clean_text_data(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -124,6 +137,7 @@ def main():
         per_device_eval_batch_size=args.batch_size,
         num_train_epochs=args.epochs,
         weight_decay=0.01,
+        warmup_ratio=0.1,
         load_best_model_at_end=True,
         metric_for_best_model="f1_macro",
         greater_is_better=True,
@@ -134,7 +148,7 @@ def main():
         run_name="deberta-aita-10k" # Disable wandb/mlflow logging by default
     )
 
-    trainer = Trainer(
+    trainer = WeightedLossTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
