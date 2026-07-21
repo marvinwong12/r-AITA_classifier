@@ -130,7 +130,8 @@ def main():
         logging_steps=50,
         fp16=False,
         bf16=True, # Auto-enable mixed precision if GPU is present
-        report_to="none" # Disable wandb/mlflow logging by default
+        report_to="wandb", # Changed from "none"
+        run_name="deberta-aita-10k" # Disable wandb/mlflow logging by default
     )
 
     trainer = Trainer(
