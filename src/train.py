@@ -69,7 +69,6 @@ def get_model(model_type: str, class_weight: str = None, random_state: int = 42,
         return base_model
 
     # If optimize is True, return a RandomizedSearchCV object
-    # n_iter=10 means it will try 10 random combinations from the parameter grid
     return RandomizedSearchCV(
         estimator=base_model,
         param_distributions=param_dist,

@@ -180,7 +180,6 @@ class AITAMetadataPreprocessor:
 
 
 if __name__ == "__main__":
-    # Quick sanity test execution
     sample_data = {
         'id': ['101', '102'],
         'timestamp': [1672531199, 1672617599],

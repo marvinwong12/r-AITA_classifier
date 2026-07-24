@@ -7,7 +7,6 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import RobustScaler
 
-# Download VADER lexicon on first run
 try:
     nltk.data.find('sentiment/vader_lexicon')
 except LookupError:
