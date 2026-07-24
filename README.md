@@ -34,6 +34,8 @@ To evaluate the predictive signal across post text, social context, and user beh
 
 ### Performance Iteration & Model Progression
 
+![Model Confusion Matrices](assets/confusion_matrix.png)
+
 | Model | Input Features | Macro $F_1$ | Key Takeaway |
 | :--- | :--- | :--- | :--- |
 | **Baseline Logistic Regression** | TF-IDF Text Vectors | ~0.46 | Collapses to majority class (`NTA`) due to feature sparsity. |
@@ -44,6 +46,8 @@ To evaluate the predictive signal across post text, social context, and user beh
 ---
 
 ### Behavioral & Metadata Signals
+
+![Metadata Correlations with YTA Verdict](assets/metadata_correlations.png)
 
 Inspecting feature coefficients and univariate correlations in the enhanced Logistic Regression model revealed strong social patterns driving community judgment:
 
@@ -91,6 +95,8 @@ Post Length > 450 words    ──►   "Hesitant"      (High FNR: 49.77%) ──
 
 ### 2. Topic Level Error Distributions
 Grouping errors by topic clusters (constructed using Bertopic) reveals two distinct failure modes based on error bias ($\text{FNR} - \text{FPR}$):
+
+![Topic Error Landscape](assets/error_landscape.png)
 
 #### Hesitant Topics (High False Negatives / Type 2 Errors)
 **Topics: rent_lease_pay, work_shift_job, parking_park_car, roommates_roommate_room, dad_father_him, brother_he_him, christmas_family_birthday**
