@@ -5,9 +5,13 @@ An end-to-end Machine Learning microservice that classifies Reddit "Am I The Ass
 
 <img width="1101" height="197" alt="Screenshot 2026-07-24 at 5 01 32 PM" src="https://github.com/user-attachments/assets/7b2e210a-6f8d-41da-99c9-72d977cdba79" />
 
-## Executive Summary:
+## Abstract
 
-Redditors are commonly described as being a hive-mind, a singularly agreeing, predictable entity. This project started as an attempt to verify this claim. However, this quickly grew into an analysis of just how challenging the task of classifying interpersonal conflict bias in unstructured in social media text can be. From the perspective of the writing, social media posts are often noisy, grammatically and narratively inconsistent, and full of nuances like sarcasm. An additional layer of difficulty arises from the complex weaving of social norms, interpersonal relations, and financial obligations that r/AITA posts often describe. 
+Redditors are frequently described as a "hive-mind". That is, a group whose collective consensus is so uniform it ought to be trivially predictable. What began as an attempt to prove or disprove this idea quickly turned into an analysis of the friction between natural language processing and human social dynamics.
+
+As it turns out, evaluating whether someone is "the asshole" isn't a simple classification problem. Social media text is notoriously noisy, grammatically inconsistent, and steeped in sarcasm. More importantly, r/AITA posts represent a chaotic web of unwritten social contracts, family feuds, and financial boundaries. This project documents the journey of fine-tuning, evaluating, and deploying a Transformer model to parse these messy, deeply human stories.
+
+## Executive Summary:
 
 This project implements a production-grade NLP pipeline: 
 
