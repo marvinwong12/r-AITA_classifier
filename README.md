@@ -194,3 +194,21 @@ gcloud run deploy aita-classifier \
   --port 8000 \
   --allow-unauthenticated
 ```
+
+## Data Source & Attribution
+
+The data used in this project originates from the public **r/AmItheAsshole Dataset** created and maintained by [Iterative](https://dvc.org/) (developers of Data Version Control / DVC).
+
+* **Dataset Source:** [iterative/aita_dataset GitHub Repository](https://github.com/iterative/aita_dataset)
+* **Original Blog Post:** [AITA for making this? A public dataset of Reddit posts about moral dilemmas](https://dvc.org/blog/a-public-reddit-dataset/) by Elle O'Brien (Iterative)
+* **Collection Strategy:** Scraped from `r/AmItheAsshole` using the Pushshift API and `PRAW` (Python Reddit API Wrapper) for posts with scores $\ge 3$.
+* **Dataset Scope:** ~110,000+ posts spanning from the creation of the subreddit through 2020.
+* **Key Fields Extracted:** `id`, `title`, `body`, `edited`, `verdict`, `score`, `num_comments`, and `is_asshole`.
+
+### Reproducing / Fetching Raw Data
+The dataset can be pulled directly from the source repository using `DVC`:
+
+```bash
+# Fetch raw CSV via DVC
+dvc get [https://github.com/iterative/aita_dataset](https://github.com/iterative/aita_dataset) aita_clean.csv
+```
