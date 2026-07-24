@@ -19,20 +19,61 @@ This project implements a production-grade NLP pipeline:
 2. **Decision Threshold Calibration:** Evaluated decision boundaries across precision-recall trade-offs, confirming that the standard calibrated threshold $\tau = 0.50$ maximizes the $F_1$-score on validation data.
 3. **Containerized Microservice:** Built using FastAPI and Docker, hardened for production, cached model weights for instant boot, and deployed to GCP Cloud Run.
 
-## Decision Rule Formulation: 
-Model predictions are governed by the calibrated probability threshold $\tau$:
+## Model Selection & Feature Analysis
 
-$$\hat{y} = \begin{cases} 1 \text{ (YTA)}, & \text{if } P(Y = 1 \mid \mathbf{x}) \ge \tau \\ 0 \text{ (NTA)}, & \text{if } P(Y = 1 \mid \mathbf{x}) < \tau \end{cases}$$
+> **Deep Dive Notebook:** For full confusion matrices, scatter plots, and topic-level error distributions, see [`02_error+feature_analysis.ipynb`](./notebooks/02_error+feature_analysis.ipynb).
 
-where $\tau = 0.50$. Empirical threshold tuning confirmed that the uncalibrated probability output from softmax already yields the optimal harmonic balance between precision and recall:
+To evaluate the predictive signal across post text, social context, and user behavior, four model iterations were trained and compared:
 
-$$F_1 = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$$
+1. **Baseline Logistic Regression (TF-IDF):** Trained strictly on unigram/bigram TF-IDF vectors.
+2. **Enhanced Logistic Regression (TF-IDF + Metadata):** Augmented TF-IDF features with post engagement and structural metadata.
+3. **RoBERTa (Cross-Entropy Loss):** Fine-tuned end-to-end on preprocessed text.
+4. **RoBERTa (Focal Loss):** Fine-tuned with focal loss to address class imbalance.
+
+---
+
+### Performance Iteration & Model Progression
+
+| Model | Input Features | Macro $F_1$ | Key Takeaway |
+| :--- | :--- | :--- | :--- |
+| **Baseline Logistic Regression** | TF-IDF Text Vectors | ~0.46 | Collapses to majority class (`NTA`) due to feature sparsity. |
+| **Enhanced Logistic Regression** | TF-IDF + Metadata | **0.65** | Massive jump (+0.19 $F_1$), proving behavioral metadata contains strong predictive signal. |
+| **RoBERTa (Cross-Entropy)** | Raw Post Text | **0.71+** | Outperforms feature engineering by capturing context, tone, and implicit social norms. |
+| **RoBERTa (Focal Loss)** | Raw Post Text | ~0.71 | Performs comparably to Cross-Entropy; pre-training representations dominate loss variant. |
+
+---
+
+### Behavioral & Metadata Signals
+
+Inspecting feature coefficients and univariate correlations in the enhanced Logistic Regression model revealed strong social patterns driving community judgment:
+
+* **The "Ratio" Effect ($\text{Correlation} = +0.268$):** A post's comment-to-score ratio is the single strongest univariate predictor of `YTA`. High comment counts paired with low upvote scores reflect community outrage ("getting ratioed"). The Logistic Regression model effectively reconstructed this signal via raw `comment_count` ($+$ weight) and `score` ($-$ weight).
+* **The "Edit" Red Flag:** Posts flagged as `edited` strongly predict `YTA`. Authors frequently return to the thread to backtrack, defend their actions, or offer defensive post-hoc explanations.
+* **First-Person Accountability:** High usage of "I" pronouns correlates with `NTA`. First-person narrative styles often reflect accountability or detailed self-explanation, which garners community sympathy.
+* **Title Structure & Length:** Longer titles (in total characters and average word length) push predictions toward `YTA`. Wordy, over-explained titles often signal defensiveness before the story even begins.
+
+---
+
+### Lexical Features & Social Psychology Insights
+
+A statistical analysis (Chi-Squared test) showed that raw text features are extremely sparse—only **11 words** met strict statistical significance thresholds. This explains why the raw TF-IDF baseline failed and defaulted to predicting `NTA`.
+
+However, analyzing the top positive (YTA) and negative (NTA) coefficients yields several qualitative findings:
+
+#### 1. The "Thought Crime" Phenomenon
+Phrases like *"AITA for wanting..."* are strong predictors of **NTA**. Reddit communities distinguish heavily between intent and execution: expressing a selfish desire or feeling in abstract (*"wanting to quit my brother's wedding"*) is judged leniently compared to committing the actual act.
+
+#### 2. Familial Bias vs. Partner Friction
+* **Nuclear Family (`NTA`):** Mentions of *"mom"*, *"family"*, and *"brother"* heavily incline the community toward `NTA`. Voters display systemic empathy regarding family dynamics, often siding with posters against "toxic parents" or "annoying siblings."
+* **Partners & Close Friends (`YTA`):** Mentions of *"gf"*, *"wife"*, or *"close friends"* shift predictions toward `YTA`. Audiences hold posters to higher standards of respect toward partners and close peers compared to extended family.
+
+#### 3. Defensive Framing vs. Remorse
+* **YTA Predictors:** Hedging vocabulary (*"anyways"*, *"guess"*, *"didnt want"*, *"reasonable"*) and aggressive verbs (*"throw"*) strongly associate with assholery.
+* **NTA Predictors:** Words signaling remorse (*"upset"*, *"horrible"*) and concrete situational stressors (*"rent"*, *"gas"*, *"business"*) lead to acquittal, as the community recognizes external pressure.
 
 ## Error Analysis & Qualitative Insights
 
-> 📖 **Deep Dive Notebook:** For full confusion matrices, scatter plots, and topic-level error distributions, see [`02_error_analysis.ipynb`](./notebooks/02_error_analysis.ipynb).
-
-To evaluate model performance beyond aggregate metrics, we analyzed prediction failures across post length, topic clusters, and narrative structure. A clear pattern emerged: **text truncation drives systematic prediction bias**, while the model struggles with unwritten social contracts and emotional valence.
+To evaluate model performance beyond aggregate metrics, I analyzed prediction failures across post length, topic clusters, and narrative structure. A clear pattern emerged: **text truncation drives systematic prediction bias**, while the model struggles with unwritten social contracts and emotional valence.
 
 ---
 
