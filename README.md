@@ -98,14 +98,15 @@ Grouping errors by topic clusters (constructed using Bertopic) reveals two disti
 
 ![Topic Error Landscape](assets/error_landscape.png)
 
-#### Hesitant Topics (High False Negatives / Type 2 Errors)
-**Topics: rent_lease_pay, work_shift_job, parking_park_car, roommates_roommate_room, dad_father_him, brother_he_him, christmas_family_birthday**
+- Hesitant Topics (High False Negatives / Type 2 Errors)
+**Topics:** rent_lease_pay, work_shift_job, parking_park_car, roommates_roommate_room, dad_father_him, brother_he_him, christmas_family_birthday
 
-Behavior: The model frequently misses true assholes when posters justify their behavior using explicit rules, corporate policies, or legal rights (e.g., calling the police over a parking violation). While technically "within their rights," these actions often break unspoken social contracts. Additionally, drawn-out familial or roommate disputes make it difficult for the model to weigh retaliation versus self-defense.
+**Behavior:** The model frequently misses true assholes when posters justify their behavior using explicit rules, corporate policies, or legal rights (e.g., calling the police over a parking violation). While technically "within their rights," these actions often break unspoken social contracts. Additionally, drawn-out familial or roommate disputes make it difficult for the model to weigh retaliation versus self-defense.
 
-#### "Trigger-Happy" Topics (High False Positives / Type 1 Errors)
-**Topics: weight_gym_fat, wear_wearing_dress, lane_car_speed.**
-Behavior: The model over-predicts YTA on short, emotionally charged posts containing high-valence trigger words (e.g., "fat", "screamed", "yelled", "inappropriate"). The model anchors heavily on the emotional tone rather than evaluating whether the reaction was justified in context.
+-  "Trigger-Happy" Topics (High False Positives / Type 1 Errors)
+**Topics:** weight_gym_fat, wear_wearing_dress, lane_car_speed.
+
+**Behavior:** The model over-predicts YTA on short, emotionally charged posts containing high-valence trigger words (e.g., "fat", "screamed", "yelled", "inappropriate"). The model anchors heavily on the emotional tone rather than evaluating whether the reaction was justified in context.
 
 ### 3. Core Model Blindspots
 1. **Intention vs. Impact:** The model struggles to separate a poster's benign intent from a harmful outcome. For instance, accidental harm caused while trying to join in on a joke is often misclassified because the model cannot weigh good intentions against negative results.
