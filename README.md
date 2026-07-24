@@ -59,19 +59,31 @@ Behavior: The model over-predicts YTA on short, emotionally charged posts contai
 2. **Legal Rights vs. Unwritten Social Nuance:** The model favors written rules (e.g., employment contracts, parking enforcement) over implicit cultural consensus (e.g., workplace boundaries, destination wedding etiquette, driving courtesy).
 3. **Gender & Topic Dynamics:** Topics centered around body image, clothing, or specific family dynamics (dad, brother) exhibit disproportionate error rates, pointing to potential domain-specific biases within the pre-trained weights or fine-tuning dataset.
 
-🏗️ System ArchitecturePlaintext[ Reddit Post Input ] 
+## System Architecture
+
+```text
+[ Reddit Post Input ] 
          │
          ▼
  ┌─────────────────────────────────────────────────────────┐
  │ FastAPI App Container (GCP Cloud Run)                    │
- │  ├── Preprocessing (clean_and_format)                  │
+ │  ├── Preprocessing (clean_and_format)                   │
  │  ├── Inference (RoBERTa PyTorch Model @ cache)          │
- │  └── Threshold Logic (YTA if P(Asshole) >= 0.50)       │
+ │  └── Threshold Logic (YTA if P(Asshole) >= 0.50)        │
  └─────────────────────────────────────────────────────────┘
          │
          ▼
 [ Reddit-Themed UI / JSON Prediction Response ]
-🛠️ Tech StackMachine Learning & Modeling: PyTorch, Hugging Face Transformers, Scikit-learn, PandasAPI & Backend: FastAPI, Uvicorn, PydanticDevOps & Cloud: Docker, Google Cloud Platform (Cloud Run, Cloud Build, Artifact Registry)📁 Repository StructurePlaintext
+```
+
+## Tech Stack:
+- Machine Learning & Modeling: PyTorch, Hugging Face Transformers, Scikit-learn, Pandas
+- API & Backend: FastAPI, Uvicorn, Pydantic
+- DevOps & Cloud: Docker, Google Cloud Platform (Cloud Run, Cloud Build, Artifact Registry)
+
+## Repository Structure
+
+```text
 
 aita_classifier/
 ├── .dockerignore            # Docker context exclusions
@@ -90,6 +102,7 @@ aita_classifier/
 │   └── 02_error_analysis.ipynb  # Error analysis & validation visualizations
 └── src/
     └── train_modernbert.py  # Model training pipeline code
+```
 
 ## Local Development Setup
 1. Clone & Install Dependencies:
