@@ -231,3 +231,7 @@ checkpoint-*/
 
 data/
 *.csv
+
+# Weights & Biases / Logs
+wandb/
+*.log

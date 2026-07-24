@@ -1,0 +1,14 @@
+# Include base production requirements
+-r requirements.txt
+
+# Data Processing & Training
+pandas
+numpy
+scikit-learn
+datasets
+accelerate
+
+# Experiment Tracking & Notebooks
+wandb
+jupyter
+matplotlib

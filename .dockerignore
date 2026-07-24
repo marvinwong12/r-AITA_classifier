@@ -1,0 +1,10 @@
+.venv
+.git
+.gitignore
+data
+models
+notebooks
+wandb
+*.md
+*.pyc
+__pycache__
