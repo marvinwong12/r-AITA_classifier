@@ -3,6 +3,8 @@ r/AITA Post Classifier & Web App Live Application Demo:
 
 An end-to-end Machine Learning microservice that classifies Reddit "Am I The Asshole?" (r/AITA) posts into YTA (Asshole) or NTA (Not The Asshole) verdicts using a fine-tuned Transformer model, served via a containerized FastAPI application on GCP Cloud Run.
 
+<img width="1101" height="197" alt="Screenshot 2026-07-24 at 5 01 32 PM" src="https://github.com/user-attachments/assets/7b2e210a-6f8d-41da-99c9-72d977cdba79" />
+
 ## Executive Summary:
 
 Redditors are commonly described as being a hive-mind, a singularly agreeing, predictable entity. This project started as an attempt to verify this claim. However, this quickly grew into an analysis of just how challenging the task of classifying interpersonal conflict bias in unstructured in social media text can be. From the perspective of the writing, social media posts are often noisy, grammatically and narratively inconsistent, and full of nuances like sarcasm. An additional layer of difficulty arises from the complex weaving of social norms, interpersonal relations, and financial obligations that r/AITA posts often describe. 
